@@ -1,6 +1,6 @@
-const CACHE_NAME = 'iching-pwa-v1';
+const CACHE_NAME = 'iching-pwa-v3';
 const urlsToCache = [
-  './數位易經_優化版_v2_1.html',
+  './數位易經_優化版_v2.3.html',
   './manifest.json'
 ];
 
