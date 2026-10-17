@@ -677,6 +677,29 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* ===== 起卦方式切換 + 撲克牌 ===== */
+        .mode-switch { display:flex; gap:8px; margin:4px 0 6px; padding:4px; background:rgba(0,0,0,0.25); border:1px solid var(--border-gold); border-radius:12px; }
+        .mode-btn { flex:1; padding:10px 6px; border:none; border-radius:9px; background:transparent; color:#bbb; font-size:15px; font-weight:bold; letter-spacing:2px; cursor:pointer; font-family:inherit; }
+        .mode-btn.active { background:linear-gradient(135deg, var(--gold), var(--gold-light)); color:#1a1a1a; }
+        .card-section { display:none; }
+        .card-row { display:flex; justify-content:center; gap:14px; margin:20px 0 6px; perspective:800px; }
+        .card-slot { text-align:center; }
+        .card-label { font-size:13px; color:var(--gold); margin-top:8px; letter-spacing:2px; }
+        .poker-card { width:76px; height:108px; position:relative; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; transition:transform 0.6s; }
+        .poker-card.flipped { transform:rotateY(180deg); -webkit-transform:rotateY(180deg); }
+        .card-face { position:absolute; top:0; left:0; width:100%; height:100%; border-radius:9px; backface-visibility:hidden; -webkit-backface-visibility:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.5); }
+        .card-back { background:repeating-linear-gradient(45deg, #7a2a20 0 6px, #8f3428 6px 12px); border:3px solid var(--gold); display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:30px; }
+        .card-front { background:#fbf8ef; border:1px solid #ccc; transform:rotateY(180deg); -webkit-transform:rotateY(180deg); color:#1a1a1a; }
+        .card-front.red { color:#c0392b; }
+        .card-corner { position:absolute; top:5px; left:7px; font-size:16px; font-weight:bold; line-height:1.05; text-align:center; }
+        .card-corner.br { top:auto; left:auto; bottom:5px; right:7px; transform:rotate(180deg); }
+        .card-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:36px; }
+        .card-digit { font-size:22px; font-weight:bold; color:var(--gold); margin-top:4px; min-height:26px; }
+        .draw-btn { display:block; width:100%; margin:14px 0 4px; padding:14px; font-size:17px; letter-spacing:4px; font-weight:bold; border:1px solid var(--gold); border-radius:12px; background:rgba(212,175,55,0.12); color:var(--gold); cursor:pointer; font-family:inherit; }
+        .draw-btn:disabled { opacity:0.5; }
+        .card-note { font-size:12px; color:#999; text-align:center; line-height:1.6; }
+        @media (max-width: 480px) { .poker-card { width:68px; height:97px; } .card-center { font-size:30px; } .card-row { gap:10px; } }
     </style>
 </head>
 <body>
@@ -741,8 +764,21 @@
         
         <!-- 輸入數字 -->
         <div class="section">
-            <div class="section-title">心中默念問題，輸入3個數字 (0-9)，百位數不得為零</div>
-            <div class="number-input-section">
+            <div class="mode-switch">
+                <button type="button" class="mode-btn active" data-mode="manual">✍️ 手動輸入</button>
+                <button type="button" class="mode-btn" data-mode="cards">🃏 撲克抽牌</button>
+            </div>
+            <div class="section-title" id="numberSectionTitle">心中默念問題，輸入3個數字 (0-9)，百位數不得為零</div>
+            <div class="card-section" id="cardSection">
+                <div class="card-row">
+                    <div class="card-slot"><div class="poker-card" id="pcard0"><div class="card-face card-back">☯</div><div class="card-face card-front"></div></div><div class="card-label">百位</div><div class="card-digit" id="pdigit0"></div></div>
+                    <div class="card-slot"><div class="poker-card" id="pcard1"><div class="card-face card-back">☯</div><div class="card-face card-front"></div></div><div class="card-label">十位</div><div class="card-digit" id="pdigit1"></div></div>
+                    <div class="card-slot"><div class="poker-card" id="pcard2"><div class="card-face card-back">☯</div><div class="card-face card-front"></div></div><div class="card-label">個位</div><div class="card-digit" id="pdigit2"></div></div>
+                </div>
+                <button type="button" class="draw-btn" id="drawCardsBtn">🃏 洗牌抽牌</button>
+                <div class="card-note">百位牌 A–8，十位、個位牌 A–10（10 代表 0）<br>每張牌獨立抽出，機率完全均等</div>
+            </div>
+            <div class="number-input-section" id="numberInputSection">
                 <input type="tel" class="digit-input" id="digit1" maxlength="1" placeholder="百" inputmode="numeric">
                 <input type="tel" class="digit-input" id="digit2" maxlength="1" placeholder="十" inputmode="numeric">
                 <input type="tel" class="digit-input" id="digit3" maxlength="1" placeholder="個" inputmode="numeric">
@@ -786,6 +822,8 @@
                 <p><strong>2. 心誠則靈</strong><br>在心中默念你的問題，保持專注與誠意</p>
                 
                 <p><strong>3. 輸入數字</strong><br>憑直覺輸入三個 0-9 的數字（百位、十位、個位），<strong>百位數不得為零</strong></p>
+                
+                <p><strong>🃏 撲克抽牌</strong><br>不想自己想數字，可切換「撲克抽牌」，心念問題後按「洗牌抽牌」，三張牌依序翻開，分別代表百位、十位、個位。百位牌只用 A–8，讓八個上卦出現機率各占 1/8；十位、個位用 A–10，10 代表 0。三張牌各自獨立抽出（等於從三副牌各抽一張），並使用瀏覽器的密碼學亂數，機率公平。</p>
                 
                 <p><strong>4. 開始占卜</strong><br>點擊「開始占卜」按鈕，系統會自動計算卦象</p>
                 
@@ -8227,11 +8265,136 @@
             }).join('');
         }
         
+        // ========== 撲克抽牌 ==========
+        var inputMode = 'manual';
+        var isDrawing = false;
+        var CARD_SUITS = [{s:'♠',red:false},{s:'♥',red:true},{s:'♦',red:true},{s:'♣',red:false}];
+        var CARD_RANKS = ['','A','2','3','4','5','6','7','8','9','10'];
+        
+        // 公平亂數：回傳 0..n-1，crypto 亂數 + 拒絕取樣，無取餘偏差
+        function fairInt(n) {
+            var c = window.crypto || window.msCrypto;
+            if (c && c.getRandomValues) {
+                var buf = new Uint32Array(1);
+                var limit = Math.floor(4294967296 / n) * n;
+                do { c.getRandomValues(buf); } while (buf[0] >= limit);
+                return buf[0] % n;
+            }
+            return Math.floor(Math.random() * n);
+        }
+        
+        // 抽一張牌，點數 1..maxRank（獨立抽、等同放回）
+        function drawPokerCard(maxRank) {
+            var rank = fairInt(maxRank) + 1;
+            return { rank: rank, digit: rank % 10, suit: CARD_SUITS[fairInt(4)] };
+        }
+        
+        function renderCardFront(el, card) {
+            var front = el.querySelector('.card-front');
+            var r = CARD_RANKS[card.rank];
+            front.className = 'card-face card-front' + (card.suit.red ? ' red' : '');
+            front.innerHTML = '<div class="card-corner">' + r + '<br>' + card.suit.s + '</div>' +
+                '<div class="card-center">' + card.suit.s + '</div>' +
+                '<div class="card-corner br">' + r + '<br>' + card.suit.s + '</div>';
+        }
+        
+        function resetCards() {
+            for (var i = 0; i < 3; i++) {
+                document.getElementById('pcard' + i).classList.remove('flipped');
+                document.getElementById('pdigit' + i).textContent = '';
+            }
+        }
+        
+        function setInputMode(mode) {
+            if (isDrawing) return;
+            inputMode = mode;
+            var btns = document.querySelectorAll('.mode-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.toggle('active', btns[i].getAttribute('data-mode') === mode);
+            }
+            var isCards = mode === 'cards';
+            document.getElementById('cardSection').style.display = isCards ? 'block' : 'none';
+            document.getElementById('numberInputSection').style.display = isCards ? 'none' : 'flex';
+            document.getElementById('numberSectionTitle').textContent = isCards
+                ? '心中默念問題，按「洗牌抽牌」翻開三張牌'
+                : '心中默念問題，輸入3個數字 (0-9)，百位數不得為零';
+            try { localStorage.setItem('inputMode', mode); } catch (e) {}
+            if (!hasPerformedDivination) {
+                document.getElementById('digit1').value = '';
+                document.getElementById('digit2').value = '';
+                document.getElementById('digit3').value = '';
+                resetCards();
+                checkCanDivine();
+            }
+        }
+        
+        function drawThreeCards() {
+            if (isDrawing) return;
+            if (hasPerformedDivination) {
+                var keepCat = selectedCategory;
+                resetDivination();
+                if (keepCat) {
+                    var cb = document.querySelector('[data-category="' + keepCat + '"]');
+                    if (cb) cb.click();
+                }
+            }
+            isDrawing = true;
+            var drawBtn = document.getElementById('drawCardsBtn');
+            drawBtn.disabled = true;
+            resetCards();
+            var cards = [drawPokerCard(8), drawPokerCard(10), drawPokerCard(10)];
+            var ids = ['digit1', 'digit2', 'digit3'];
+            for (var k = 0; k < 3; k++) document.getElementById(ids[k]).value = '';
+            checkCanDivine();
+            
+            setTimeout(function () {
+                var i = 0;
+                (function flipNext() {
+                    var el = document.getElementById('pcard' + i);
+                    renderCardFront(el, cards[i]);
+                    el.classList.add('flipped');
+                    vibrate([30]);
+                    var idx = i;
+                    setTimeout(function () {
+                        document.getElementById('pdigit' + idx).textContent = cards[idx].digit;
+                        document.getElementById(ids[idx]).value = cards[idx].digit;
+                    }, 350);
+                    i++;
+                    if (i < 3) {
+                        setTimeout(flipNext, 650);
+                    } else {
+                        setTimeout(function () {
+                            isDrawing = false;
+                            drawBtn.disabled = false;
+                            drawBtn.textContent = '🃏 重新抽牌';
+                            checkCanDivine();
+                            if (!selectedCategory) alert('請先選擇占卜事項');
+                        }, 500);
+                    }
+                })();
+            }, 250);
+        }
+        
+        function initCardMode() {
+            var btns = document.querySelectorAll('.mode-btn');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].addEventListener('click', function () {
+                    vibrate([20]);
+                    setInputMode(this.getAttribute('data-mode'));
+                });
+            }
+            document.getElementById('drawCardsBtn').addEventListener('click', drawThreeCards);
+            var saved = null;
+            try { saved = localStorage.getItem('inputMode'); } catch (e) {}
+            if (saved === 'cards') setInputMode('cards');
+        }
+        
         // ========== 事件處理 ==========
         document.addEventListener('DOMContentLoaded', function() {
             initCategorySelection();
             initNumberInput();
             initDivinationButton();
+            initCardMode();
             loadLastCategory();
         });
         
@@ -8287,6 +8450,7 @@
         function initDivinationButton() {
             document.getElementById('divinationBtn').addEventListener('click', function() {
                 vibrate([50]);
+                if (isDrawing) return;
                 if (hasPerformedDivination) {
                     resetDivination();
                 } else {
@@ -8331,7 +8495,9 @@
             selectedCategory = null;
             btn.disabled = true;
             
-            document.getElementById('digit1').focus();
+            resetCards();
+            document.getElementById('drawCardsBtn').textContent = '🃏 洗牌抽牌';
+            if (inputMode !== 'cards') document.getElementById('digit1').focus();
         }
         
         function performDivination() {

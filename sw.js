@@ -1,4 +1,4 @@
-const CACHE_NAME = 'iching-pwa-v2';
+const CACHE_NAME = 'iching-pwa-v3-cards';
 const urlsToCache = [
   './',
   './index.html',
